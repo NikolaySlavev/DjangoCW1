@@ -18,12 +18,8 @@ def handle_login(request):
 		if user is not None:
 			if user.is_active:
 				login(request, user)
-				if user.is_authenticated:
-					data = 'Hi ' + str(username) + '\nYou logged in with the following credentials: \n' + str(data)
-					return HttpResponse(data, status = 200)
-				else:
-					return HttpResponse("USER IS NEWW WASNT LOGGED IN!!!", status = 200)
-					#???????????????????????????????????????
+				data = 'Hi ' + str(username) + '\nYou logged in with the following credentials: \n' + str(data)
+				return HttpResponse(data, status = 200)
 			else:
 				return HttpResponse('Invalid login', status = 401)
 		else:
@@ -93,7 +89,12 @@ def post_remove(request):
 				return HttpResponse("Story key required", status = 503)
 			story_key = body_data["story_key"]
 			post = NewsStory.objects.all()
+			if not story_key.isdigit():
+				return HttpResponse("Story key needs to be an integer", status = 503)
 			post = post.filter(pk = story_key)
+			if len(post) == 0:
+				return HttpResponse("Story with story_key=" + str(story_key) + " does not exist", status = 503)
+			print(len(post))
 			post.delete()	
 			return HttpResponse("Story removed successfully")
 		else:
@@ -123,40 +124,8 @@ def post_new(request):
 			
 			new_post = NewsStory(author = author, headline = headline, category = category, region = region, details = details, date = timezone.now())
 			new_post.save()
-			return HttpResponse("Created Successfully")
+			return HttpResponse("Created Successfully", status = 201)
 		else:
 			return HttpResponse("User not logged in", status = 503)
 	else:
 		return HttpResponse("Requires a POST request", status = 503)
-
-		
-		
-		
-"""
-Server
-post_new -> 
-		return 201 and 503 response codes
-		content type needs to be json
-		
-		response = HttpResponse()
-		response.write("<p>Here's the text of the Web page.</p>")
-		
-login and logout ->
-		ensure that the response is text/plain
-		
-		
-	2018-02-02 10:10:10
-	YYYY-MM-DD HH:MM
-	
-Client
-post_new ->
-		add restrictions to inputs
-login ->
-		splitting problem (if you put only one word)
-list_stories ->
-		add a way to get all stories if id = *
-"""		
-		
-		
-		#login http://127.0.0.1:8000
-		#news -id="test" -cat="tech" -reg="uk" -date="14/02/2019"
