@@ -71,8 +71,8 @@ def post_list(request):
 		custom_data = []
 		for story in posts:
 			date = str(story.date.day) + "/" + str(story.date.month) + "/" + str(story.date.year)
-			custom_data.append({'Key': story.id, "Headline": story.headline, "Category": story.category, "Region": story.region, "Author": story.author.name, "Date": date, "Details": story.details})
-		return JsonResponse(custom_data, safe=False)
+			custom_data.append({"key": story.id, "headline": story.headline, "story_cat": story.category, "story_region": story.region, "author": story.author.name, "story_date": date, "story_details": story.details})
+		return JsonResponse({"stories": custom_data}, safe=False)
 	else:
 		return HttpResponse("Requires a POST request", status = 503)
 	
