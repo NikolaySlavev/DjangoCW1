@@ -42,22 +42,24 @@ def handle_logout(request):
 def post_list(request):
 	if request.method == 'GET':
 		body_unicode = request.body.decode("utf-8")
+		print("BODYYY ", body_unicode)
+		print("QUERYYY", request)
 		body_data = json.loads(body_unicode)
 		
 		posts = NewsStory.objects.all()
-		if 'category' not in body_data:
+		if 'category' not in body_data or body_data["category"] == "*":
 			category = '*'
 		else:
 			if body_data["category"] not in ["POL", "ART", "TECH", "TRIVIA"]:
 				return HttpResponse("Invalid Category. Must be POL, ART, TECH or TRIVIA", status = 503)
 			posts = posts.filter(category = body_data["category"])
-		if 'region' not in body_data:
+		if 'region' not in body_data or body_data["region"] == "*":
 			region = '*'
 		else:
 			if body_data["region"] not in ["UK", "EU", "W"]:
 				return HttpResponse("Invalid Region. Must be UK, EU or W", status = 503)
 			posts = posts.filter(region = body_data["region"])
-		if 'date' not in body_data:
+		if 'date' not in body_data or body_data["date"] == "*":
 			date = '*'
 		else:
 			if "/" not in body_data["date"] or len(body_data["date"].split("/")) !=3:
