@@ -10,11 +10,14 @@ import json, datetime
 
 @csrf_exempt
 def handle_login(request):
+	# handles the login functionality
 	if request.method == 'POST':
 		username = request.POST['username']
 		password = request.POST['password']
 		data = "username=%s, password=%s" % (username, password)
 		user = authenticate(request, username=username, password=password)
+		# if the user doesn't exist or was not authenticated with the correct credentials we return an invalid login.
+		# Otherwise, the login is successful
 		if user is not None:
 			if user.is_active:
 				login(request, user)
@@ -25,35 +28,47 @@ def handle_login(request):
 		else:
 			return HttpResponse('Invalid login', status = 401)
 	else:
+		# if the request wasn't post, an error message is returned
 		return HttpResponse('Requires a POST request', status = 503)
 
 @csrf_exempt
 def handle_logout(request):
+	# handles the logout
 	if request.method == 'POST':
 		if (request.user.is_authenticated):
 			logout(request)
 			return HttpResponse("Goodbye")
 		else:
+			# if the user is not logged in and we call the logout it will provide the appropriate mesasge.
+			# The message will still return 200 because there weren't any errors
 			return HttpResponse("User is not logged in")
 	else:
 		return HttpResponse("Requires a POST request", status = 503)
 
 @csrf_exempt
 def post_list(request):
+	# handles the listing of the stories
 	if request.method == 'GET':
 		body_unicode = request.body.decode("utf-8")
 		body_data = json.loads(body_unicode)
 		
+		# because the restriction in the models file would only apply if we were using templates
+		# we need to add additional code in order to meet the coursework requirements
+		# we first retrieve all stories
 		posts = NewsStory.objects.all()
+		# then check if any of the filter are present
 		if "category" in body_data.keys() and body_data["category"] != "*":
+			# if a filter is present, we check whether the filter has a valid value
 			if body_data["category"] not in ["POL", "ART", "TECH", "TRIVIA"]:
 				return HttpResponse("Invalid Category. Must be POL, ART, TECH or TRIVIA", status = 503)
+			# if everything is valid, we filter the stories
 			posts = posts.filter(category = body_data["category"])
 		if 'region' in body_data.keys() and body_data["region"] != "*":
 			if body_data["region"] not in ["UK", "EU", "W"]:
 				return HttpResponse("Invalid Region. Must be UK, EU or W", status = 503)
 			posts = posts.filter(region = body_data["region"])
 		if 'date' in body_data.keys() and body_data["date"] != "*":
+			# the date field has a strange format so we adjust it in order to meet the coursework specs
 			if "/" not in body_data["date"] or len(body_data["date"].split("/")) !=3:
 				return HttpResponse("Invalid date format. Must be day/month/year", status=503)
 			date_array = body_data["date"].split("/")
@@ -67,7 +82,8 @@ def post_list(request):
 			except Exception as e:
 				return HttpResponse(e, status=503)
 			posts = posts.filter(date__gte = date)
-				
+		
+		# again in order to meet the coursework specifications we make a custome made json container and send it
 		custom_data = []
 		for story in posts:
 			date = str(story.date.day) + "/" + str(story.date.month) + "/" + str(story.date.year)
@@ -78,10 +94,12 @@ def post_list(request):
 	
 @csrf_exempt
 def post_remove(request):
+	# handles the removal of story
 	if request.method == 'POST':
 		if (request.user.is_authenticated):
 			body_unicode = request.body.decode("utf-8")
 			body_data = json.loads(body_unicode)
+			# if the story key is not there, we return an error
 			if 'story_key' not in body_data.keys():
 				return HttpResponse("Story key required", status = 503)
 			story_key = body_data["story_key"]
@@ -100,6 +118,7 @@ def post_remove(request):
 		
 @csrf_exempt
 def post_new(request):
+	# handles the posting of a new story
 	if request.method == 'POST':
 		body_unicode = request.body.decode("utf-8")
 		body_data = json.loads(body_unicode)
@@ -112,6 +131,7 @@ def post_new(request):
 			category = body_data["category"]
 			region = body_data["region"]
 			author = Author.objects.get(username=request.user)
+			# we check if everything is valid as stated by the coursework specifications
 			if len(headline) > 64:
 				return HttpResponse("Exceeded Headline length of 64 characters", status = 503)
 			if len(details) > 512:
@@ -125,6 +145,7 @@ def post_new(request):
 			new_post.save()
 			return HttpResponse("Created Successfully", status = 201)
 		else:
+			# since the user was not logged in, we return an error message
 			return HttpResponse("User not logged in", status = 503)
 	else:
 		return HttpResponse("Requires a POST request", status = 503)

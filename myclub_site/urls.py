@@ -18,7 +18,7 @@ from django.urls import path, include
 from myclub_site.views import hello
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path(r'hello/', hello),
-	path('', include('events.urls')),
+    path('admin/', admin.site.urls), # the admin url
+    path(r'hello/', hello), # just a default url
+	path('', include('events.urls')), # all urls are redirected to the urls defined in the application "events"
 ]
