@@ -57,17 +57,17 @@ def post_list(request):
 		# we first retrieve all stories
 		posts = NewsStory.objects.all()
 		# then check if any of the filter are present
-		if "category" in body_data.keys() and body_data["category"] != "*":
+		if 'story_cat' in body_data.keys() and body_data["category"] != "*":
 			# if a filter is present, we check whether the filter has a valid value
 			if body_data["category"] not in ["POL", "ART", "TECH", "TRIVIA"]:
 				return HttpResponse("Invalid Category. Must be POL, ART, TECH or TRIVIA", status = 503)
 			# if everything is valid, we filter the stories
 			posts = posts.filter(category = body_data["category"])
-		if 'region' in body_data.keys() and body_data["region"] != "*":
+		if 'story_region' in body_data.keys() and body_data["region"] != "*":
 			if body_data["region"] not in ["UK", "EU", "W"]:
 				return HttpResponse("Invalid Region. Must be UK, EU or W", status = 503)
 			posts = posts.filter(region = body_data["region"])
-		if 'date' in body_data.keys() and body_data["date"] != "*":
+		if 'story_date' in body_data.keys() and body_data["date"] != "*":
 			# the date field has a strange format so we adjust it in order to meet the coursework specs
 			if "/" not in body_data["date"] or len(body_data["date"].split("/")) !=3:
 				return HttpResponse("Invalid date format. Must be day/month/year", status=503)
